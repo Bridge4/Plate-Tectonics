@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::render::mesh::{self, PrimitiveTopology};
 mod cam;
+mod light;
 /// set up a simple 3D scene
 
 fn make_mesh(
@@ -8,7 +9,7 @@ fn make_mesh(
             normals: Vec<[f32; 3]>, 
             uvs: Vec<[f32; 2]>, 
             indices: mesh::Indices
-        )   -> bevy::prelude::Mesh {
+)           -> bevy::prelude::Mesh {
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     mesh.set_indices(Some(indices));
@@ -22,7 +23,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    ) {
+) {
     //setting vertices
     let vertices = [
         ([0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0]),
@@ -54,19 +55,6 @@ fn setup(
         material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
         ..default()
     });
-    // light
-    commands.spawn_bundle(PointLightBundle {
-        point_light: PointLight {
-            intensity: 1800.0,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(0.0, 16.0, 0.0),
-        ..default()
-    });
-    // camera
-    cam::spawn_camera(commands);
-  
 }
 
 fn main() {
@@ -74,6 +62,8 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
+        .add_startup_system(cam::spawn_camera)
+        .add_startup_system(light::point_light)
         .add_system(cam::pan_orbit_camera)
         .run();
 }
